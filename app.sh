@@ -139,6 +139,7 @@ writeHttpResponse() {
       return
     fi
     printf "%s\r\n" "HTTP/1.1 200 OK"
+    printf "%s\r\n" "Content-Type: $(file -b --mime-type $FILE_PATH)"
     printf "%s\r\n" ""
     cat "$FILE_PATH"
     return
@@ -168,6 +169,7 @@ writeHttpResponse() {
     #   debug "%s=%s" "$i" "${HTTP_HEADERS[$i]}"
     # done
     printf "%s\r\n" "HTTP/1.1 200 OK"
+    printf "%s\r\n" "Content-Type: text/html"
 
     [[ -z $CUSTOM_HEADERS ]] && printf "%s\r\n" ""
     printf "%s" "$result"
