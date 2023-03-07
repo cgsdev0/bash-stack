@@ -8,6 +8,24 @@ debug() {
   printf "%s\n" "$@" 1>&2
 }
 
+urlencode() {
+    # Usage: urlencode "string"
+    local LC_ALL=C
+    for (( i = 0; i < ${#1}; i++ )); do
+        : "${1:i:1}"
+        case "$_" in
+            [a-zA-Z0-9.~_-])
+                printf '%s' "$_"
+            ;;
+
+            *)
+                printf '%%%02X' "'$_"
+            ;;
+        esac
+    done
+    printf '\n'
+}
+
 urldecode() {
     # Usage: urldecode "string"
     : "${1//+/ }"
@@ -139,7 +157,11 @@ writeHttpResponse() {
       return
     fi
     printf "%s\r\n" "HTTP/1.1 200 OK"
-    printf "%s\r\n" "Content-Type: $(file -b --mime-type $FILE_PATH)"
+    if [[ "$REQUEST_PATH" == *".css" ]]; then
+      printf "%s\r\n" "Content-Type: text/css"
+    else
+      printf "%s\r\n" "Content-Type: $(file -b --mime-type $FILE_PATH)"
+    fi
     printf "%s\r\n" ""
     cat "$FILE_PATH"
     return
