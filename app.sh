@@ -111,7 +111,8 @@ parseHttpRequest() {
   [[ "$CLEN" =~ ^[0-9]+$ ]] && \
     test $CLEN -gt 0 && read -N $CLEN REQUEST_BODY;
   # Parse Form Data
-  if [[ ${HTTP_HEADERS["Content-Type"]} == "application/x-www-form-urlencoded" ]]; then
+  if [[ ! -z "$REQUEST_BODY" ]] && \
+    [[ ${HTTP_HEADERS["Content-Type"]} == "application/x-www-form-urlencoded" ]]; then
     while read -r -d '&' line; do
       FORM_DATA["${line%%=*}"]=$(urldecode "${line#*=}")
     done << EOF
