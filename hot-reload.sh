@@ -10,7 +10,7 @@ function finish {
 trap finish EXIT
 
 while true; do
-  tcpserver 0 3000 ./app.sh &
+  tcpserver -c 1000 0 3000 ./app.sh &
   server_pid=$!
   inotifywait app.sh -e MODIFY
   /bin/kill -9 $server_pid -$server_pid

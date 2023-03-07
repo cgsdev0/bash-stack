@@ -1,6 +1,6 @@
 # headers
 
-ROOM_CODE="$(cat /dev/urandom | base64 | head -c 8 | sed 's/[+=\/]//g')"
+ROOM_CODE="$(cat /dev/urandom | base64 | head -c 20 | sed 's/[+=\/]//g')"
 PASSWORD="$(cat /dev/urandom | base64 | head -c 20 | sed 's/[+=\/]//g')"
 
 echo "$PASSWORD" > "data/password-${ROOM_CODE}"

@@ -15,7 +15,7 @@ sub=$(subscribe "$PUBSUB_KEY")
 
 output() {
   while true; do
-    cat "$sub" | tee >(cat 1>&2)
+    cat "$sub"
   done
 }
 
@@ -41,6 +41,6 @@ wait $pid 2>/dev/null
 unsubscribe "$sub"
 
 [[ "$USER_TYPE" == "player" ]] && \
-  printf "event: leave\ndata: %s\n\n" "$PLAYER_ID" \
-  | publish "$PUBSUB_KEY" &&
+  printf "event: leave\ndata: %s\n\n" "$PLAYER_ID" |\
+  publish "$PUBSUB_KEY" &&
   sed -i "/${PLAYER_ID}/d" "$ROOM_DATA"

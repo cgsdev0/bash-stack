@@ -5,11 +5,8 @@ if [[ "$REQUEST_METHOD" != "POST" ]]; then
   return
 fi
 
-
 ROOM_CODE="${FORM_DATA["room_code"]}"
-
 ROOM_PASSWORD=$(cat "data/password-$(basename ${ROOM_CODE})")
-debug "ROOM PASS $ROOM_PASSWORD"
 
 if [[ "$ROOM_PASSWORD" != "$PASSWORD" ]]; then
   echo "Bad auth!"
@@ -28,8 +25,7 @@ fi
 
 rm -f "$BUZZ_LOCK"
 
-
-printf "event: unlock\ndata: %s\n\n" "<button hx-post='/buzz' hx-sse='swap:buzz' hx-swap='delete'>Buzz</button>" \
+printf "event: unlock\ndata: %s\n\n" "Buzz" \
   | publish "$PUBSUB_KEY"
 
 echo "Unlocked!"

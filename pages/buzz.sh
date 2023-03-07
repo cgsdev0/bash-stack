@@ -13,7 +13,7 @@ PUBSUB_KEY="room-${ROOM_CODE}"
 BUZZ_LOCK="data/buzzed-$(basename ${ROOM_CODE})"
 
 if [[ -f "$BUZZ_LOCK" ]]; then
-  echo "Too slow :("
+  echo ""
   return
 fi
 
@@ -23,4 +23,4 @@ echo "$PLAYER_ID" > "$BUZZ_LOCK"
 printf "event: buzz\ndata: %s\n\n" "Reset" \
   | publish "$PUBSUB_KEY"
 
-echo "Buzzed!"
+echo ""

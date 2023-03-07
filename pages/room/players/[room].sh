@@ -1,6 +1,7 @@
 
 ROOM_CODE="${REQUEST_PATH##*/}"
 
+touch "data/room-$(basename ${ROOM_CODE})"
 for username in $(cat "data/room-$(basename ${ROOM_CODE})"); do
   LOOPED=true
   if [[ -f "data/buzzed-$(basename ${ROOM_CODE})" ]]; then
