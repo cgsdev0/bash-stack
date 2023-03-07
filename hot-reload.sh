@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
+cd "${0%/*}"
+mkdir -p pubsub
+mkdir -p data
+
 function finish {
-  kill $server_pid
+  /bin/kill -9 $server_pid -$server_pid
 }
 trap finish EXIT
 
-while true; do 
+while true; do
   tcpserver 0 3000 ./app.sh &
   server_pid=$!
   inotifywait app.sh -e MODIFY
-  kill $server_pid
+  /bin/kill -9 $server_pid -$server_pid
+  wait $server_pid
 done
