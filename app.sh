@@ -25,9 +25,7 @@ function htmx_page() {
   <body>
 EOF
 
-while IFS= read -r line; do
-  echo "$line"
-done
+cat
 
 [[ ${HTTP_HEADERS["HX-Request"]} == "true" ]] || cat << EOF
 </body>
@@ -74,6 +72,7 @@ function publish() {
     return
   fi
   while IFS= read -r line; do
+  # TODO: use -exec on find directly
   find pubsub/"${TOPIC}" -type p \
     | xargs -I {} bash -c "printf '%s\n' '$line' > {}"
   done
@@ -198,7 +197,7 @@ matchRoute() {
     routeRegex="/${route%.sh}"
     # routeRegex="${routeRegex//\//\\/}"
     routeRegex="^$(echo "$routeRegex" | sed 's@\[[^]]*\]@[^\/]+@g')$"
-    debug "THE REGEX IS '$routeRegex'"
+    # debug "THE REGEX IS '$routeRegex'"
     [[ "$sanitized" =~ $routeRegex ]] && echo "$route" && return
   done
   findCatchAllRoutes | while IFS= read -r route; do

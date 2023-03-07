@@ -8,14 +8,7 @@ PUBSUB_KEY="room-${ROOM_CODE}"
 
 PLAYER_ID="${COOKIES["username"]}"
 
-ROOM_DATA="data/room-${ROOM_CODE}"
-
-[[ "$USER_TYPE" == "player" ]] && \
-  printf "event: join\ndata: %s\n\n" "${PLAYER_ID}" \
-  | publish "$PUBSUB_KEY" && \
-  touch "$ROOM_DATA" && \
-  grep -qF "$PLAYER_ID" "$ROOM_DATA" || \
-  echo "$PLAYER_ID" >> "$ROOM_DATA"
+ROOM_DATA="data/room-$(basename ${ROOM_CODE})"
 
 
 sub=$(subscribe "$PUBSUB_KEY")
@@ -28,6 +21,14 @@ output() {
 
 output &
 pid=$!
+
+[[ "$USER_TYPE" == "player" ]] && \
+  printf "event: join\ndata: %s\n\n" "${PLAYER_ID}" \
+  | publish "$PUBSUB_KEY" && \
+  touch "$ROOM_DATA" && \
+  (grep -qF "$PLAYER_ID" "$ROOM_DATA" || \
+  echo "$PLAYER_ID" >> "$ROOM_DATA" && \
+  sort -o "$ROOM_DATA" "$ROOM_DATA")
 
 while IFS= read -r line; do
   echo "client says $line, but i dont care" 1>&2
