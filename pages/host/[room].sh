@@ -4,7 +4,7 @@ ROOM_CODE="${REQUEST_PATH##*/}"
 htmx_page << EOF
 
 <div hx-sse="connect:/sse/host/${ROOM_CODE}">
-    <div hx-trigger="sse:score, sse:leave, sse:join, sse:unlock, sse:buzz, load" hx-get="/room/players/${ROOM_CODE}" class="players"></div>
+    <div hx-trigger="sse:leave, sse:join, sse:unlock, sse:buzz, load" hx-get="/room/players/${ROOM_CODE}" class="players"></div>
     <form>
     <input type="hidden" name="room_code" value="${ROOM_CODE}" />
     <div class="button-container">

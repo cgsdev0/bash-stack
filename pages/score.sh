@@ -21,6 +21,9 @@ else
   printf "%s\t%s\n" "$USERNAME" "$AMOUNT" >> "$SCORE_FILE"
 fi
 
+RED_CLASS=$([[ "$NEW_SCORE" -lt "0" ]] && echo " red")
+echo "<div class='score${RED_CLASS}' id='score-for-${USERNAME}' hx-swap-oob='true'>$NEW_SCORE</div>"
+
 PUBSUB_KEY="room-${ROOM_CODE}"
 printf "event: score\ndata: %s\n\n" "idk" \
   | publish "$PUBSUB_KEY"

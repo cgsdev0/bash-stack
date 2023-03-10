@@ -16,7 +16,7 @@ for username in $(cat "data/room-$(basename ${ROOM_CODE})"); do
   <div class='player-wrapper'>
     <div class='player${BUZZED_CLASS}'>
       <div class='username'>${username}</div>
-      <div class='score${RED_CLASS}'>${SCORE}</div>
+      <div id='score-for-${username}' class='score${RED_CLASS}'>${SCORE}</div>
     </div>
     <form hx-post='/score' hx-swap='none' class='score-controls'>
       <input type='hidden' name='room_code' value='${ROOM_CODE}' />
