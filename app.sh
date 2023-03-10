@@ -44,7 +44,7 @@ function htmx_page() {
   <body>
 EOF
 
-cat
+cat # meow
 
 [[ ${HTTP_HEADERS["HX-Request"]} == "true" ]] || cat << EOF
 <div id="signature">
