@@ -18,6 +18,7 @@ if result=$(grep -P "$USERNAME\t" "$SCORE_FILE"); then
   NEW_SCORE=$(( SCORE + AMOUNT ))
   sed -i "s/$USERNAME\t$SCORE/$USERNAME\t$NEW_SCORE/" "$SCORE_FILE"
 else
+  NEW_SCORE=$AMOUNT
   printf "%s\t%s\n" "$USERNAME" "$AMOUNT" >> "$SCORE_FILE"
 fi
 
