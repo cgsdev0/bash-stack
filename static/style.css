@@ -22,19 +22,50 @@ body {
     #00ffdd
   );
 }
+
+.red {
+  color: #ed7258;
+}
+
 .players {
   margin-top: 80px;
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 8px;
 }
 
+button.add {
+  color: black;
+  background-color: #44ee88;
+}
+button.add:active {
+  color: white;
+  background-color: #24ce68;
+}
+button.subtract {
+  color: black;
+  background-color: #ed7258;
+}
+button.subtract:active {
+  color: white;
+  background-color: #cd5238;
+}
+.score-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 8px;
+  gap: 4px;
+}
+.score-controls button {
+  border-radius: 8px;
+}
 .player {
   min-height: 140px;
   min-width: 140px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;

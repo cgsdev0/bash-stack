@@ -4,4 +4,5 @@ cd "${0%/*}"
 mkdir -p pubsub
 mkdir -p data
 
-tcpserver -c 1000 0 3000 ./app.sh
+PORT=${PORT:-3000}
+tcpserver -c 1000 0 $PORT ./app.sh
