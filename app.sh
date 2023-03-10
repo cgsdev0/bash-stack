@@ -65,7 +65,6 @@ function subscribe() {
     debug "ATTEMPTED TO SUBSCRIBE ON EMPTY TOPIC"
     return
   fi
-  debug "SUBSCRIBE ON $TOPIC"
   mkdir -p pubsub/"${TOPIC}"
   tmppipe=$(mktemp -up pubsub/"${TOPIC}")
   mkfifo -m 600 "$tmppipe"
@@ -80,7 +79,6 @@ function unsubscribe() {
     return
   fi
   rm -f "$TOPIC"
-  debug "UNSUBSCRIBE FROM ${TOPIC%/*}"
 }
 
 function publish() {
