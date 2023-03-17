@@ -74,6 +74,19 @@ button.subtract:active {
   border: 4px solid cyan;
 }
 
+.player .disconnected {
+  color: red;
+}
+.player .disconnected:hover {
+  color: red;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.player .disconnected::before {
+  color: red;
+  content: "(X) ";
+}
+
 .player.buzzed {
   background-color: #50cc80;
   border: 4px solid lime;

@@ -27,8 +27,12 @@ htmx_page << EOF
     .score-controls {
       display: none;
     }
+    .player .disconnected:hover {
+      text-decoration: inherit;
+      cursor: inherit;
+    }
   </style>
-    <div hx-trigger="sse:score, sse:leave, sse:join, sse:buzz, sse:unlock" hx-get="/room/players/${ROOM_CODE}" class="players"></div>
+    <div hx-trigger="sse:kick, sse:score, sse:leave, sse:join, sse:buzz, sse:unlock" hx-get="/room/players/${ROOM_CODE}" class="players"></div>
     <form>
     <input type="hidden" name="room_code" value="${ROOM_CODE}" />
     <div class="button-container">

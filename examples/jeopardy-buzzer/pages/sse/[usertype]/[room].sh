@@ -26,8 +26,9 @@ pid=$!
   printf "event: join\ndata: %s\n\n" "${PLAYER_ID}" \
   | publish "$PUBSUB_KEY" && \
   touch "$ROOM_DATA" && \
-  (grep -qF "$PLAYER_ID" "$ROOM_DATA" || \
-  echo "$PLAYER_ID" >> "$ROOM_DATA" && \
+  ((grep -qP "^${PLAYER_ID}(\tX)*$" "$ROOM_DATA" && \
+  sed -i "s/^${PLAYER_ID}\tX$/${PLAYER_ID}/" "$ROOM_DATA") || \
+  echo -e "$PLAYER_ID" >> "$ROOM_DATA" && \
   sort -o "$ROOM_DATA" "$ROOM_DATA")
 
 while IFS= read -r line; do
@@ -43,4 +44,5 @@ unsubscribe "$sub"
 [[ "$USER_TYPE" == "player" ]] && \
   printf "event: leave\ndata: %s\n\n" "$PLAYER_ID" |\
   publish "$PUBSUB_KEY" &&
-  sed -i "/${PLAYER_ID}/d" "$ROOM_DATA"
+  sed -i "s/^${PLAYER_ID}$/${PLAYER_ID}\tX/" "$ROOM_DATA"
+  # sed -i "/${PLAYER_ID}/d" "$ROOM_DATA"

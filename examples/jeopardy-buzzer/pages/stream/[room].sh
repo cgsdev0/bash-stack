@@ -24,7 +24,13 @@ htmx_page << EOF
       display: flex;
       flex-grow: 1;
     }
+    .player .disconnected {
+      color: inherit;
+    }
+    .player .disconnected::before {
+      content: initial;
+    }
   </style>
-    <div hx-trigger="load, sse:score, sse:leave, sse:join, sse:buzz, sse:unlock" hx-get="/room/players/${ROOM_CODE}" class="players"></div>
+    <div hx-trigger="load, sse:kick, sse:score, sse:leave, sse:join, sse:buzz, sse:unlock" hx-get="/room/players/${ROOM_CODE}" class="players"></div>
 </div>
 EOF
