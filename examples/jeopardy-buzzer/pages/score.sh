@@ -27,4 +27,4 @@ echo "<div class='score${RED_CLASS}' id='score-for-${USERNAME}' hx-swap-oob='tru
 
 PUBSUB_KEY="room-${ROOM_CODE}"
 printf "event: score\ndata: %s\n\n" "idk" \
-  | publish "$PUBSUB_KEY"
+  | publish "$PUBSUB_KEY" &

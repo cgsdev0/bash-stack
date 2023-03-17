@@ -94,9 +94,8 @@ function publish() {
     return
   fi
   while IFS= read -r line; do
-  # TODO: use -exec on find directly
-  find pubsub/"${TOPIC}" -type p \
-    | xargs -I {} bash -c "printf '%s\n' '$line' > {}"
+    find pubsub/"${TOPIC}" -type p \
+      | xargs -P 4 -I {} bash -c "printf '%s\n' '$line' > {}"
   done
 }
 

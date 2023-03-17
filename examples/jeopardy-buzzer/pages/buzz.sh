@@ -21,6 +21,6 @@ echo "$PLAYER_ID" > "$BUZZ_LOCK"
 
 
 printf "event: buzz\ndata: %s\n\n" "Reset" \
-  | publish "$PUBSUB_KEY"
+  | publish "$PUBSUB_KEY" &
 
 echo ""

@@ -26,6 +26,6 @@ fi
 rm -f "$BUZZ_LOCK"
 
 printf "event: unlock\ndata: %s\n\n" "Buzz" \
-  | publish "$PUBSUB_KEY"
+  | publish "$PUBSUB_KEY" &
 
 echo "Unlocked!"
