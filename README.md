@@ -23,6 +23,7 @@ not sure
 - [x] form data parsing
 - [x] cookie parsing
 - [x] url search param parsing
+- [ ] multipart file uploads
 - [ ] database abstraction
 - [ ] higher level SSE abstraction
 - [ ] bootstrap tool (`create-bs-app`) 
