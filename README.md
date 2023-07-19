@@ -24,6 +24,8 @@ not sure
 - [x] cookie parsing
 - [x] url search param parsing
 - [ ] multipart file uploads
+- [ ] better example apps
+- [ ] docs?
 - [ ] database abstraction
 - [ ] higher level SSE abstraction
 - [ ] bootstrap tool (`create-bs-app`) 
