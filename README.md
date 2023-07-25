@@ -23,7 +23,7 @@ not sure
 - [x] form data parsing
 - [x] cookie parsing
 - [x] url search param parsing
-- [ ] multipart file uploads
+- [x] multipart file uploads
 - [ ] better example apps
 - [ ] docs?
 - [ ] database abstraction

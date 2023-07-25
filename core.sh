@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 
 declare -A HTTP_HEADERS
+declare -A FILE_UPLOADS
+declare -A FILE_UPLOAD_TYPES
+declare -A FILE_UPLOAD_NAMES
 declare -A QUERY_PARAMS
 declare -A FORM_DATA
 declare -A COOKIES
 
 debug() {
   printf "%s\n" "$@" 1>&2
+}
+
+trim_quotes() {
+    # Usage: trim_quotes "string"
+    : "${1//\'}"
+    printf '%s\n' "${_//\"}"
 }
 
 urlencode() {
@@ -172,7 +181,6 @@ EOF
   if [[ ${HTTP_HEADERS["Content-Type"]} == "multipart/form-data; "* ]]; then
       BOUNDARY="${HTTP_HEADERS["Content-Type"]}"
       BOUNDARY="${BOUNDARY#*=}"
-      debug "BOUNDARY=$BOUNDARY"
   fi
 
 
@@ -185,11 +193,14 @@ ${HTTP_HEADERS["Cookie"]};
 EOF
   fi
 
+  CLEN=${HTTP_HEADERS["Content-Length"]}
+
   # Read multipart body
   if [[ ! -z "$BOUNDARY" ]]; then
       state="start"
       reader="reading"
       local -A MULTIPART_HEADERS
+      local -A DISPOSITIONS
       while read -n2 byte; do
         # we have to implement our own readline because of reasons
         if [[ "$reader" == "reading" ]]; then
@@ -206,6 +217,7 @@ EOF
           if [[ "$state" == "start" ]] && [[ "$PARSED" == "--$BOUNDARY"* ]]; then
             state="headers"
             MULTIPART_HEADERS=()
+            DISPOSITIONS=()
           elif [[ "$state" == "headers" ]]; then
             PARSED="${PARSED%%$'\r'}"
             if [[ -z "$PARSED" ]]; then
@@ -220,11 +232,24 @@ EOF
               echo -n "${line}00" | xxd -r -p >> "$UPLOAD_TO"
             else
               # this is a newline char
-              if [[ "$PARSED" == "--$BOUNDARY--"* ]]; then
-                # sadly, we cannot goto
-                break
-              elif [[ "$PARSED" == "--$BOUNDARY"* ]]; then
+              if [[ "$PARSED" == "--$BOUNDARY"* ]]; then
+                while read -r -d ';' line; do
+                  DISPOSITIONS["${line%%=*}"]=$(urldecode "${line#*=}")
+                done << EOF
+${MULTIPART_HEADERS["Content-Disposition"]};
+EOF
+                NAME=$(trim_quotes "${DISPOSITIONS[name]}")
+                FILENAME=$(trim_quotes "${DISPOSITIONS[filename]}")
+                FILE_UPLOADS["$NAME"]="$UPLOAD_TO"
+                FILE_UPLOAD_NAMES["$NAME"]="$FILENAME"
+                FILE_UPLOAD_TYPES["$NAME"]="${MULTIPART_HEADERS[Content-Type]}"
+                MULTIPART_HEADERS=()
+                DISPOSITIONS=()
                 state="headers"
+                if [[ "$PARSED" == "--$BOUNDARY--"* ]]; then
+                  # i dont know how, but we made it out alive
+                  break
+                fi
               else
                 echo -n "${line}0a" | xxd -r -p >> "$UPLOAD_TO"
               fi
@@ -234,10 +259,9 @@ EOF
           line=''
         fi
         # wheeeeeeeeeeeeeeeee
-      done < <(stdbuf -o0 -i0 hexdump -v -e '/1 "%02x"')
+      done < <(stdbuf -o0 -i0 hexdump -v -e '/1 "%02x"' -n $CLEN)
   else
     # Read body
-    CLEN=${HTTP_HEADERS["Content-Length"]}
     [[ "$CLEN" =~ ^[0-9]+$ ]] && \
       test $CLEN -gt 0 && read -rN $CLEN REQUEST_BODY;
   fi
