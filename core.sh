@@ -183,7 +183,6 @@ EOF
       BOUNDARY="${BOUNDARY#*=}"
   fi
 
-
   # Read cookies (yum!)
   if [[ ! -z "${HTTP_HEADERS["Cookie"]}" ]]; then
     while read -r -d ';' line; do
@@ -197,6 +196,19 @@ EOF
 
   # Read multipart body
   if [[ ! -z "$BOUNDARY" ]]; then
+      route_script=`matchRoute "$REQUEST_PATH"`
+      ALLOW_UPLOADS=false
+      if directive_test=$(head -1 "pages/${route_script}"); then
+        if [[ "$directive_test" == "# allow-uploads" ]]; then
+          ALLOW_UPLOADS=true
+        fi
+      fi
+      if [[ "$ALLOW_UPLOADS" != "true" ]]; then
+        printf "%s\r\n" "HTTP/1.1 403 Forbidden"
+        printf "%s\r\n" "Server: bash lol"
+        printf "%s\r\n" ""
+        return
+      fi
       state="start"
       reader="reading"
       local -A MULTIPART_HEADERS
