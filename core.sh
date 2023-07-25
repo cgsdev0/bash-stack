@@ -168,10 +168,79 @@ EOF
     # debug "$line"
   done
 
-  # Read body
-  CLEN=${HTTP_HEADERS["Content-Length"]}
-  [[ "$CLEN" =~ ^[0-9]+$ ]] && \
-    test $CLEN -gt 0 && read -rN $CLEN REQUEST_BODY;
+  # Parse multipart Form Data
+  if [[ ${HTTP_HEADERS["Content-Type"]} == "multipart/form-data; "* ]]; then
+      BOUNDARY="${HTTP_HEADERS["Content-Type"]}"
+      BOUNDARY="${BOUNDARY#*=}"
+      debug "BOUNDARY=$BOUNDARY"
+  fi
+
+
+  # Read cookies (yum!)
+  if [[ ! -z "${HTTP_HEADERS["Cookie"]}" ]]; then
+    while read -r -d ';' line; do
+      COOKIES["${line%%=*}"]=$(urldecode "${line#*=}")
+    done << EOF
+${HTTP_HEADERS["Cookie"]};
+EOF
+  fi
+
+  # Read multipart body
+  if [[ ! -z "$BOUNDARY" ]]; then
+      state="start"
+      reader="reading"
+      local -A MULTIPART_HEADERS
+      while read -n2 byte; do
+        # we have to implement our own readline because of reasons
+        if [[ "$reader" == "reading" ]]; then
+          if [[ "$byte" == "0a" ]]; then
+            reader="flushing-newline"
+          elif [[ "$byte" == "00" ]]; then
+            reader="flushing-null"
+          else
+            line="${line}${byte}"
+          fi
+        fi
+        if [[ "$reader" == "flushing"* ]]; then
+          PARSED="$(echo -n $line | xxd -r -p)"
+          if [[ "$state" == "start" ]] && [[ "$PARSED" == "--$BOUNDARY"* ]]; then
+            state="headers"
+            MULTIPART_HEADERS=()
+          elif [[ "$state" == "headers" ]]; then
+            PARSED="${PARSED%%$'\r'}"
+            if [[ -z "$PARSED" ]]; then
+              UPLOAD_TO=$(mktemp -p uploads)
+              state="body"
+            else
+              MULTIPART_HEADERS["${PARSED%%:*}"]="${PARSED#*: }"
+            fi
+          elif [[ "$state" == "body" ]]; then
+            if [[ "$reader" == "flushing-null" ]]; then
+              # this is a null char
+              echo -n "${line}00" | xxd -r -p >> "$UPLOAD_TO"
+            else
+              # this is a newline char
+              if [[ "$PARSED" == "--$BOUNDARY--"* ]]; then
+                # sadly, we cannot goto
+                break
+              elif [[ "$PARSED" == "--$BOUNDARY"* ]]; then
+                state="headers"
+              else
+                echo -n "${line}0a" | xxd -r -p >> "$UPLOAD_TO"
+              fi
+            fi
+          fi
+          reader="reading"
+          line=''
+        fi
+        # wheeeeeeeeeeeeeeeee
+      done < <(stdbuf -o0 -i0 hexdump -v -e '/1 "%02x"')
+  else
+    # Read body
+    CLEN=${HTTP_HEADERS["Content-Length"]}
+    [[ "$CLEN" =~ ^[0-9]+$ ]] && \
+      test $CLEN -gt 0 && read -rN $CLEN REQUEST_BODY;
+  fi
   # Parse Form Data
   if [[ ! -z "$REQUEST_BODY" ]] && \
     [[ ${HTTP_HEADERS["Content-Type"]} == "application/x-www-form-urlencoded" ]]; then
@@ -182,13 +251,6 @@ ${REQUEST_BODY}&
 EOF
   fi
 
-  if [[ ! -z "${HTTP_HEADERS["Cookie"]}" ]]; then
-    while read -r -d ';' line; do
-      COOKIES["${line%%=*}"]=$(urldecode "${line#*=}")
-    done << EOF
-${HTTP_HEADERS["Cookie"]};
-EOF
-  fi
 }
 
 writeHttpResponse() {
