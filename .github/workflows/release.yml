@@ -1,0 +1,27 @@
+name: Releases
+
+on: 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag'
+        required: true
+        default: 'v0.0.0' 
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the template zip
+      run: |
+        mv examples/template/* . || echo ok
+        rm -rf examples README.md bootstrap.sh
+        zip -r template.zip *
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "template.zip"
+        tag: ${{ github.event.inputs.tag }}
