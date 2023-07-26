@@ -45,9 +45,11 @@ setup_project() {
   echo "PROJECT_NAME=${PROJECT_NAME}" > "config.sh"
   echo "Project '$PROJECT_NAME' is ready!"
   echo ""
+  echo ""
   echo "You can get started by doing the following:"
-  echo "\tcd './$PROJECT_NAME'"
-  echo "\t./start.sh"
+  echo ""
+  echo -e "\tcd '$PROJECT_NAME'"
+  echo -e "\t./start.sh"
 }
 
 # Main script
