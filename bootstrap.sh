@@ -40,8 +40,7 @@ is_valid_project_name() {
 # Function to set up a new project
 setup_project() {
   echo "Creating a new project '$PROJECT_NAME'..."
-  mkdir "$PROJECT_NAME"
-  cp -r "$TMP_DIR/template"/* "$PROJECT_NAME"
+  cp -r "$TMP_DIR" "./$PROJECT_NAME"
   cd "$PROJECT_NAME"
   echo "Project '$PROJECT_NAME' is ready!"
 }
