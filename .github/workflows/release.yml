@@ -25,3 +25,4 @@ jobs:
       with:
         artifacts: "template.zip"
         tag: ${{ github.event.inputs.tag }}
+        generateReleaseNotes: true
