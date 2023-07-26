@@ -15,13 +15,13 @@ show_usage() {
 download_framework() {
   echo "Downloading the framework..."
   if ! curl -sSL "$BASE_URL/$ZIP_NAME" -o "$TMP_DIR/$ZIP_NAME"; then
-    echo "Error: Failed to download the framework."
+    echo "Error: Failed to download the framework." 1>&2
     rm -rf "$TMP_DIR"
     exit 1
   fi
   echo "Extracting the framework..."
   if ! unzip -q "$TMP_DIR/$ZIP_NAME" -d "$TMP_DIR"; then
-    echo "Error: Failed to extract the framework."
+    echo "Error: Failed to extract the framework." 1>&2
     rm -rf "$TMP_DIR"
     exit 1
   fi
@@ -51,8 +51,17 @@ main() {
 
   # Check if a project name is provided as an argument
   if [ -z "$1" ]; then
+    # we need to connect to /dev/tty in order to read stdin
+    if [ ! -t 0 ]; then
+        if [ ! -t 1 ]; then
+            echo "Error: Unable to run interactively!" 1>&2
+            exit 1
+        fi
+      read -p "Enter a project name: " PROJECT_NAME </dev/tty
+    else
+      read -p "Enter a project name: " PROJECT_NAME
+    fi
     # Prompt the user for the project name interactively
-    read -p "Enter a project name: " PROJECT_NAME
     if [ -z "$PROJECT_NAME" ]; then
       show_usage
       rm -rf "$TMP_DIR"
@@ -64,14 +73,14 @@ main() {
 
   # Check if the project name is valid
   if ! is_valid_project_name "$PROJECT_NAME"; then
-    echo "Error: Invalid project name. Project name can only contain letters, numbers, dashes, and underscores."
+    echo "Error: Invalid project name. Project name can only contain letters, numbers, dashes, and underscores." 1>&2
     rm -rf "$TMP_DIR"
     exit 1
   fi
 
   # Check if the project directory already exists
   if [ -d "$PROJECT_NAME" ]; then
-    echo "Error: Project directory '$PROJECT_NAME' already exists."
+    echo "Error: Project directory '$PROJECT_NAME' already exists." 1>&2
     rm -rf "$TMP_DIR"
     exit 1
   fi
