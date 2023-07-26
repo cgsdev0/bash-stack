@@ -133,7 +133,9 @@ function decode_result() {
 
 function component() {
   local REQUEST_PATH
+  local REQUEST_METHOD
   REQUEST_PATH="$1"
+  REQUEST_METHOD="GET"
   route_script=`matchRoute "$REQUEST_PATH"`
   INTERNAL_REQUEST=true
   result=$(source "pages/${route_script}")
