@@ -42,7 +42,12 @@ setup_project() {
   echo "Creating a new project '$PROJECT_NAME'..."
   cp -r "$TMP_DIR" "./$PROJECT_NAME"
   cd "$PROJECT_NAME"
+  echo "PROJECT_NAME=${PROJECT_NAME}" > "config.sh"
   echo "Project '$PROJECT_NAME' is ready!"
+  echo ""
+  echo "You can get started by doing the following:"
+  echo "\tcd './$PROJECT_NAME'"
+  echo "\t./start.sh"
 }
 
 # Main script
