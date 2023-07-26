@@ -4,13 +4,10 @@
 
 # Quick Start
 
-*Bootstrapper coming soon...*
-
-1. clone the project
-1. create a 'pages' folder next to `core.sh`
-1. run `start.sh` to run the server
-1. read the [htmx docs](https://htmx.org/)
-1. check out the 'examples' folder
+Create a new bash stack app:
+```
+curl -SsL create.bashsta.cc | bash
+```
 
 # ...Why?
 
@@ -24,11 +21,11 @@ not sure
 - [x] cookie parsing
 - [x] url search param parsing
 - [x] multipart file uploads
-- [ ] better example apps
+- [x] better example apps
 - [ ] docs?
 - [ ] database abstraction
 - [ ] higher level SSE abstraction
-- [ ] bootstrap tool (`create-bs-app`) 
+- [x] bootstrap tool (`create-bs-app`) 
 
 ## Disclaimer
 
