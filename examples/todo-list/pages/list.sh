@@ -7,6 +7,7 @@ listify() {
 }
 
 if [[ "$REQUEST_METHOD" == "DELETE" ]]; then
+  # note: this is definitely susceptible to evil inputs
   sed -i "/^${FORM_DATA[item]} /d" data/list
   return $(status_code 200)
 fi
