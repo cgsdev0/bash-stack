@@ -19,7 +19,7 @@ if [[ "$REQUEST_METHOD" == "PUT" ]]; then
 fi
 
 htmx_page << EOF
-<ul id="list" hx-oob-swap="true">
+<ul id="list">
   $([[ "$DATA" == "\n" || "$DATA" == "" ]] || echo "$DATA" | listify)
 </ul>
 EOF
