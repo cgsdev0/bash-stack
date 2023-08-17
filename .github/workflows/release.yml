@@ -19,6 +19,7 @@ jobs:
     - name: Build the template zip
       run: |
         mv examples/template/* . || echo ok
+        mv examples/template/.gitignore . || echo ok
         rm -rf examples README.md bootstrap.sh
         zip -r template.zip *
     - uses: ncipollo/release-action@v1
