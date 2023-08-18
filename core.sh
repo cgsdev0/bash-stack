@@ -6,6 +6,7 @@ declare -A FILE_UPLOAD_TYPES
 declare -A FILE_UPLOAD_NAMES
 declare -A QUERY_PARAMS
 declare -A FORM_DATA
+declare -A PATH_VARS
 declare -A COOKIES
 
 debug() {
@@ -139,11 +140,12 @@ function decode_result() {
 function component() {
   local REQUEST_PATH
   local REQUEST_METHOD
+  local ROUTE_SCRIPT
   REQUEST_PATH="$1"
   REQUEST_METHOD="GET"
-  route_script=`matchRoute "$REQUEST_PATH"`
+  matchRoute "$REQUEST_PATH"
   INTERNAL_REQUEST=true
-  result=$(source "pages/${route_script}")
+  result=$(source "pages/${ROUTE_SCRIPT}")
   echo "$result"
 }
 
@@ -204,9 +206,9 @@ EOF
 
   # Read multipart body
   if [[ ! -z "$BOUNDARY" ]]; then
-      route_script=`matchRoute "$REQUEST_PATH"`
+      matchRoute "$REQUEST_PATH"
       ALLOW_UPLOADS=false
-      if directive_test=$(head -1 "pages/${route_script}"); then
+      if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
         if [[ "$directive_test" == "# allow-uploads" ]]; then
           ALLOW_UPLOADS=true
         fi
@@ -318,8 +320,8 @@ writeHttpResponse() {
     cat "$FILE_PATH"
     return
   fi
-  route_script=`matchRoute "$REQUEST_PATH"`
-  if [[ -z "$route_script" ]]; then
+  matchRoute "$REQUEST_PATH"
+  if [[ -z "$ROUTE_SCRIPT" ]]; then
     debug "404 no match found"
     printf "%s\r\n" "HTTP/1.1 404 Not Found"
     printf "%s\r\n" "Server: bash lol"
@@ -327,13 +329,15 @@ writeHttpResponse() {
     return
   fi
 
-  if directive_test=$(head -1 "pages/${route_script}"); then
+  for i in "${!PATH_VARS[@]}";do printf "%s=%s\n" "$i" "${PATH_VARS[$i]}" 1>&2; done
+
+  if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
     if [[ "$directive_test" == "# sse" ]]; then
       printf "%s\r\n" "HTTP/1.1 200 OK"
       printf "%s\r\n" "Server: bash lol"
       printf "%s\r\n" "Content-Type: text/event-stream"
       printf "%s\r\n" ""
-      source "pages/${route_script}"
+      source "pages/${ROUTE_SCRIPT}"
       TOPIC="$(topic)"
       if [[ -z "$TOPIC" ]]; then
         debug "ERROR: EMPTY TOPIC"
@@ -365,7 +369,7 @@ writeHttpResponse() {
       CUSTOM_HEADERS=1
     fi
   fi
-  result=$(source "pages/${route_script}")
+  result=$(source "pages/${ROUTE_SCRIPT}")
   CODE=$?
   if [[ "$CODE" -lt 64 ]]; then
     # for i in "${!HTTP_HEADERS[@]}"; do
@@ -387,7 +391,7 @@ writeHttpResponse() {
 
 findRoutes() {
   cd pages
-  for i in $(find . -type f -iname '*.sh' \
+  for i in $(find . -type f,l -iname '*.sh' \
     | sed 's@^\./@@'); do
     echo $i;
   done
@@ -408,7 +412,7 @@ findCatchAllRoutes() {
 matchRoute() {
 
   if [[ "$1" == "/" ]]; then
-    echo "index.sh"
+    ROUTE_SCRIPT="index.sh"
     return
   fi
 
@@ -417,22 +421,56 @@ matchRoute() {
 
   # for our sanity
   sanitized="${1%%/}"
-  findPredefinedRoutes | while IFS= read -r route; do
-    [[ "/${route%.sh}" == "$sanitized" ]] && echo "$route" && return
-  done
-  findDynamicRoutes | while IFS= read -r route; do
+  while IFS= read -r route; do
+    if [[ "/${route%.sh}" == "$sanitized" ]]; then
+      ROUTE_SCRIPT="$route"
+      return
+    fi
+  done < <(findPredefinedRoutes)
+  while IFS= read -r route; do
     routeRegex="/${route%.sh}"
-    routeRegex="^$(echo "$routeRegex" | sed 's@\[[^]]*\]@[^\/]+@g')$"
-    [[ "$sanitized" =~ $routeRegex ]] && echo "$route" && return
-  done
-  findCatchAllRoutes | while IFS= read -r route; do
+    routeRegex="^$(echo "$routeRegex" | sed 's@\[[^]]*\]@([^\/]+)@g')$"
+    if [[ "$sanitized" =~ $routeRegex ]]; then
+      local -a PATH_VALS
+      PATH_VALS=("${BASH_REMATCH[@]}")
+      ROUTE_SCRIPT="$route"
+      [[ "/${route%.sh}" =~ $routeRegex ]]
+      for (( i=1; i<${#BASH_REMATCH[@]}; i++ )); do
+        local KEY
+        KEY="${BASH_REMATCH[$i]}"
+        KEY="${KEY//\[}"
+        KEY="${KEY//\]}"
+        PATH_VARS[$KEY]=${PATH_VALS[$i]}
+      done
+      return
+    fi
+  done < <(findDynamicRoutes)
+  while IFS= read -r route; do
     routeRegex="/${route%.sh}"
-    routeRegex="^${routeRegex//\/\[\[...*\]\]/.*}$"
+    routeRegex="^${routeRegex//\/\[\[...*\]\]/\(\/.*\)?}$"
     routeRegex="${routeRegex//\//\\/}"
-    routeRegex="^${routeRegex//\[...*\]/.+}$"
-    routeRegex="^${routeRegex//\[*\]/[^\/]+}$"
-    [[ "$sanitized" =~ $routeRegex ]] && echo "$route" && return
-  done
+    routeRegex="${routeRegex//\[...*\]/\(.+\)}"
+    routeRegex="${routeRegex//\[*\]/\([^\/]+\)}"
+    if [[ "$sanitized" =~ $routeRegex ]]; then
+      local -a PATH_VALS
+      PATH_VALS=("${BASH_REMATCH[@]}")
+      ROUTE_SCRIPT="$route"
+      [[ "/${route%.sh}" =~ $routeRegex ]]
+      for (( i=1; i<${#BASH_REMATCH[@]}; i++ )); do
+        local KEY
+        local VAL
+        KEY="${BASH_REMATCH[$i]}"
+        KEY="${KEY//\[}"
+        KEY="${KEY//\]}"
+        KEY="${KEY//\.}"
+        KEY="${KEY//\/}"
+        VAL=${PATH_VALS[$i]}
+        VAL=${VAL#\/}
+        PATH_VARS[$KEY]="$VAL"
+      done
+      return
+    fi
+  done < <(findCatchAllRoutes)
 }
 
 export -f findPredefinedRoutes
