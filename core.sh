@@ -417,7 +417,7 @@ findCatchAllRoutes() {
 
 matchRoute() {
 
-  if [[ "$1" == "/" ]] && [[ -f "index.sh" ]]; then
+  if [[ "$1" == "/" ]] && [[ -f "pages/index.sh" ]]; then
     ROUTE_SCRIPT="index.sh"
     return
   fi
