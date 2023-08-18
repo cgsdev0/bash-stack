@@ -138,6 +138,10 @@ function decode_result() {
 }
 
 function component() {
+  if [[ "$1" == "$REQUEST_PATH" ]]; then
+    echo "<!-- RECURSION DETECTED -->"
+    return
+  fi
   local REQUEST_PATH
   local REQUEST_METHOD
   local ROUTE_SCRIPT
@@ -145,8 +149,12 @@ function component() {
   REQUEST_METHOD="GET"
   matchRoute "$REQUEST_PATH"
   INTERNAL_REQUEST=true
-  result=$(source "pages/${ROUTE_SCRIPT}")
-  echo "$result"
+  if [[ -f "pages/${ROUTE_SCRIPT}" ]]; then
+    result=$(source "pages/${ROUTE_SCRIPT}")
+    echo "$result"
+  else
+    echo "<!-- MISSING COMPONENT: $1 -->"
+  fi
 }
 
 export -f status_code
@@ -329,8 +337,6 @@ writeHttpResponse() {
     return
   fi
 
-  for i in "${!PATH_VARS[@]}";do printf "%s=%s\n" "$i" "${PATH_VARS[$i]}" 1>&2; done
-
   if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
     if [[ "$directive_test" == "# sse" ]]; then
       printf "%s\r\n" "HTTP/1.1 200 OK"
@@ -411,7 +417,7 @@ findCatchAllRoutes() {
 
 matchRoute() {
 
-  if [[ "$1" == "/" ]]; then
+  if [[ "$1" == "/" ]] && [[ -f "index.sh" ]]; then
     ROUTE_SCRIPT="index.sh"
     return
   fi
