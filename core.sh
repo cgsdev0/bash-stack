@@ -114,6 +114,11 @@ function publish() {
   done
 }
 
+event() {
+  printf "event: %s\ndata: %s\n\n" "$@"
+}
+
+
 # encode result
 # can encode the following status codes as unix return codes:
 # 200-263
@@ -148,6 +153,7 @@ export -f debug
 export -f subscribe
 export -f unsubscribe
 export -f publish
+export -f event
 export -f htmx_page
 
 readonly URI_REGEX='(/[^?#]*)(\?([^#]*))?'
@@ -328,6 +334,32 @@ writeHttpResponse() {
       printf "%s\r\n" "Content-Type: text/event-stream"
       printf "%s\r\n" ""
       source "pages/${route_script}"
+      TOPIC="$(topic)"
+      if [[ -z "$TOPIC" ]]; then
+        debug "ERROR: EMPTY TOPIC"
+        return
+      fi
+      SUB_FD=$(subscribe "$TOPIC")
+      output() {
+        while true; do
+          cat "$SUB_FD"
+        done
+      }
+      output &
+      PID=$!
+
+      on_open 1>&2
+
+      while IFS= read -r line; do
+        :
+      done
+
+      kill -9 $PID &>/dev/null
+      wait $PID 2>/dev/null
+
+      unsubscribe "$SUB_FD"
+      on_close 1>&2
+
       return
     elif [[ "$directive_test" == "# headers" ]]; then
       CUSTOM_HEADERS=1

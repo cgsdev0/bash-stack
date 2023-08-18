@@ -37,7 +37,8 @@ not sure
 - [x] example apps
 - [ ] docs?
 - [ ] database abstraction
-- [ ] higher level SSE abstraction
+- [ ] URL variable parsing
+- [x] higher level SSE abstraction
 - [x] bootstrap script
 
 ## Disclaimer
