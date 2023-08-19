@@ -35,8 +35,11 @@ not sure
 - [x] url search param parsing
 - [x] multipart file uploads
 - [x] example apps
-- [ ] docs?
+- [x] docs
+- [ ] good docs
 - [ ] database abstraction
+- [x] tailwind
+- [x] live reloading
 - [x] URL variable parsing
 - [x] higher level SSE abstraction
 - [x] bootstrap script
