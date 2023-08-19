@@ -65,8 +65,12 @@ main() {
             exit 1
         fi
       read -p "Enter a project name: " PROJECT_NAME </dev/tty
+      read -n 1 -p "Would you like to use tailwind? (y/n) " TAILWIND_CHOICE </dev/tty
+      echo
     else
       read -p "Enter a project name: " PROJECT_NAME
+      read -n 1 -p "Would you like to use tailwind? (y/n) " TAILWIND_CHOICE
+      echo
     fi
     # Prompt the user for the project name interactively
     if [ -z "$PROJECT_NAME" ]; then
@@ -92,6 +96,9 @@ main() {
     exit 1
   fi
 
+  if [[ "$TAILWIND_CHOICE" == "y" ]] || [[ "$TAILWIND_CHOICE" == "Y" ]]; then
+    ZIP_NAME="template-tailwind.zip"
+  fi
   # Download and extract the framework
   download_framework
 
