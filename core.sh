@@ -9,6 +9,8 @@ declare -A FORM_DATA
 declare -A PATH_VARS
 declare -A COOKIES
 
+[[ -f 'config.sh' ]] && source config.sh
+
 debug() {
   printf "%s\n" "$@" 1>&2
 }
@@ -45,7 +47,11 @@ urldecode() {
 
 function htmx_page() {
   if [[ -z "$NO_STYLES" ]]; then
-    STYLE_TEXT='<link rel="stylesheet" href="/static/style.css">'
+    if [[ -z "$TAILWIND" ]]; then
+      STYLE_TEXT='<link rel="stylesheet" href="/static/style.css">'
+    else
+      STYLE_TEXT='<link rel="stylesheet" href="/static/tailwind.css">'
+    fi
   fi
   [[ ${HTTP_HEADERS["HX-Request"]} == "true" ]] || [[ "$INTERNAL_REQUEST" == "true" ]] || cat << EOF
   <!doctype html>
@@ -53,11 +59,14 @@ function htmx_page() {
   <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   ${STYLE_TEXT}
-  <script src="https://unpkg.com/htmx.org@1.9.3" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.3/dist/htmx.min.js" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.8"></script>
   <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
   </head>
   <body>
+  <div style="display:none" hx-ext="sse" sse-connect="/hmr" sse-swap="none">
+    <div hx-trigger="sse:reload" hx-post="/hmr"></div>
+  </div>
 EOF
 
 cat # meow
@@ -330,11 +339,43 @@ writeHttpResponse() {
   fi
   matchRoute "$REQUEST_PATH"
   if [[ -z "$ROUTE_SCRIPT" ]]; then
-    debug "404 no match found"
-    printf "%s\r\n" "HTTP/1.1 404 Not Found"
-    printf "%s\r\n" "Server: bash lol"
-    printf "%s\r\n" ""
-    return
+    if [[ "$REQUEST_PATH" == "/hmr" ]]; then
+      if [[ "$REQUEST_METHOD" == "POST" ]]; then
+        printf "%s\r\n" "HTTP/1.1 204 OK"
+        printf "%s\r\n" "Server: bash lol"
+        printf "%s\r\n" "HX-Redirect: ${HTTP_HEADERS[HX-Current-Url]}"
+        printf "%s\r\n" ""
+        return
+      fi
+      printf "%s\r\n" "HTTP/1.1 200 OK"
+      printf "%s\r\n" "Server: bash lol"
+      printf "%s\r\n" "Content-Type: text/event-stream"
+      printf "%s\r\n" ""
+      output() {
+        while true; do
+          inotifywait -e MODIFY -r pages &> /dev/null
+          event "reload"
+        done
+      }
+      output &
+      PID=$!
+
+
+      while IFS= read -r line; do
+        :
+      done
+
+      kill -9 $PID &>/dev/null
+      wait $PID 2>/dev/null
+
+      return
+    else
+      debug "404 no match found"
+      printf "%s\r\n" "HTTP/1.1 404 Not Found"
+      printf "%s\r\n" "Server: bash lol"
+      printf "%s\r\n" ""
+      return
+    fi
   fi
 
   if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then

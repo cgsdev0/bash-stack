@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  padding: 0 40px;
+}
+#signature {
+  position: absolute;
+  z-index: 100;
+  right: 20px;
+  top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#signature a {
+  text-decoration: none;
+}
+
+#signature a:hover {
+  text-decoration: underline;
+}
+
+#signature svg {
+  width: 36px;
+  height: 36px;
+  margin-top: -4px;
+  vertical-align: middle;
+  display: inline;
+}
+
+#form {
+  display: flex;
+  max-width: 400px;
+  flex-direction: column;
+}
+
+#count {
+  font-size: 24px;
+}
