@@ -28,17 +28,21 @@ jobs:
         unlink template/start.sh
         cp core.sh template/.
         cp start.sh template/.
-        zip -r template.zip template/*
+        cd template/
+        zip -r ../template.zip *
 
+        cd ..
+        rm -rf template/
         # same thing for tailwind template
-        mkdir -p tailwind
-        mv examples/tailwind/* tailwind/ || echo ok
-        mv examples/tailwind/.gitignore tailwind/ || echo ok
-        unlink tailwind/core.sh
-        unlink tailwind/start.sh
-        cp core.sh tailwind/.
-        cp start.sh tailwind/.
-        zip -r template-tailwind.zip tailwind/*
+        mkdir -p template
+        mv examples/tailwind/* template/ || echo ok
+        mv examples/tailwind/.gitignore template/ || echo ok
+        unlink template/core.sh
+        unlink template/start.sh
+        cp core.sh template/.
+        cp start.sh template/.
+        cd template/
+        zip -r ../template-tailwind.zip *
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "template.zip,template-tailwind.zip"
