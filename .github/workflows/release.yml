@@ -12,26 +12,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.events.input.tag }}
     permissions:
       contents: write
     steps:
     - uses: actions/checkout@v3
     - name: Build the template zip
       run: |
-        sed '2s/^/VERSION=${{ github.events.input.tag }}\n/' core.sh
+        sed -i '2s/^/VERSION='$VERSION'\n/' core.sh
         mkdir -p template
         mv examples/template/* template/ || echo ok
         mv examples/template/.gitignore template/ || echo ok
-        cp -f core.sh template/.
-        cp -f start.sh template/.
+        unlink template/core.sh
+        unlink template/start.sh
+        cp core.sh template/.
+        cp start.sh template/.
         zip -r template.zip template/*
 
         # same thing for tailwind template
         mkdir -p tailwind
         mv examples/tailwind/* tailwind/ || echo ok
         mv examples/tailwind/.gitignore tailwind/ || echo ok
-        cp -f core.sh tailwind/.
-        cp -f start.sh tailwind/.
+        unlink tailwind/core.sh
+        unlink tailwind/start.sh
+        cp core.sh tailwind/.
+        cp start.sh tailwind/.
         zip -r template-tailwind.zip tailwind/*
     - uses: ncipollo/release-action@v1
       with:
