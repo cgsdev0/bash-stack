@@ -15,6 +15,13 @@ debug() {
   printf "%s\n" "$@" 1>&2
 }
 
+respond() {
+    CODE=$1
+    shift
+    printf "HTTP/1.1 %s %s\r\n" "$CODE" "$*"
+    printf "%s\r\n" "Server: bash lol"
+}
+
 trim_quotes() {
     # Usage: trim_quotes "string"
     : "${1//\'}"
@@ -45,6 +52,17 @@ urldecode() {
     printf '%b\n' "${_//%/\\x}"
 }
 
+function _inject_hmr() {
+  if [[ "${DEV:-true}" != "true" ]]; then
+    return
+  fi
+  cat << EOF
+  <div style="display:none" hx-ext="sse" sse-connect="/hmr" sse-swap="none">
+    <div hx-trigger="sse:reload" hx-post="/hmr"></div>
+  </div>
+EOF
+}
+
 function htmx_page() {
   if [[ -z "$NO_STYLES" ]]; then
     if [[ -z "$TAILWIND" ]]; then
@@ -64,9 +82,7 @@ function htmx_page() {
   <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
   </head>
   <body>
-  <div style="display:none" hx-ext="sse" sse-connect="/hmr" sse-swap="none">
-    <div hx-trigger="sse:reload" hx-post="/hmr"></div>
-  </div>
+  $(_inject_hmr)
 EOF
 
 cat # meow
@@ -231,8 +247,7 @@ EOF
         fi
       fi
       if [[ "$ALLOW_UPLOADS" != "true" ]]; then
-        printf "%s\r\n" "HTTP/1.1 403 Forbidden"
-        printf "%s\r\n" "Server: bash lol"
+        respond 403 Forbidden
         printf "%s\r\n" ""
         return
       fi
@@ -321,13 +336,11 @@ writeHttpResponse() {
     FILE_PATH=".${REQUEST_PATH}"
 
     if [[ ! -f "$FILE_PATH" ]]; then
-      printf "%s\r\n" "HTTP/1.1 404 Not Found"
-      printf "%s\r\n" "Server: bash lol"
+      respond 404 Not Found
       printf "%s\r\n" ""
       return
     fi
-    printf "%s\r\n" "HTTP/1.1 200 OK"
-    printf "%s\r\n" "Server: bash lol"
+    respond 200 OK
     if [[ "$REQUEST_PATH" == *".css" ]]; then
       printf "%s\r\n" "Content-Type: text/css"
     else
@@ -339,16 +352,14 @@ writeHttpResponse() {
   fi
   matchRoute "$REQUEST_PATH"
   if [[ -z "$ROUTE_SCRIPT" ]]; then
-    if [[ "$REQUEST_PATH" == "/hmr" ]]; then
+    if [[ "$REQUEST_PATH" == "/hmr" ]] && [[ "${DEV:-true}" == "true" ]]; then
       if [[ "$REQUEST_METHOD" == "POST" ]]; then
-        printf "%s\r\n" "HTTP/1.1 204 OK"
-        printf "%s\r\n" "Server: bash lol"
+        respond 204 OK
         printf "%s\r\n" "HX-Redirect: ${HTTP_HEADERS[HX-Current-Url]}"
         printf "%s\r\n" ""
         return
       fi
-      printf "%s\r\n" "HTTP/1.1 200 OK"
-      printf "%s\r\n" "Server: bash lol"
+      respond 200 OK
       printf "%s\r\n" "Content-Type: text/event-stream"
       printf "%s\r\n" ""
       output() {
@@ -371,8 +382,7 @@ writeHttpResponse() {
       return
     else
       debug "404 no match found"
-      printf "%s\r\n" "HTTP/1.1 404 Not Found"
-      printf "%s\r\n" "Server: bash lol"
+      respond 404 Not Found
       printf "%s\r\n" ""
       return
     fi
@@ -380,8 +390,7 @@ writeHttpResponse() {
 
   if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
     if [[ "$directive_test" == "# sse" ]]; then
-      printf "%s\r\n" "HTTP/1.1 200 OK"
-      printf "%s\r\n" "Server: bash lol"
+      respond 200 OK
       printf "%s\r\n" "Content-Type: text/event-stream"
       printf "%s\r\n" ""
       source "pages/${ROUTE_SCRIPT}"
@@ -422,15 +431,13 @@ writeHttpResponse() {
     # for i in "${!HTTP_HEADERS[@]}"; do
     #   debug "%s=%s" "$i" "${HTTP_HEADERS[$i]}"
     # done
-    printf "%s\r\n" "HTTP/1.1 200 OK"
-    printf "%s\r\n" "Server: bash lol"
+    respond 200 OK
     [[ -z $CUSTOM_HEADERS ]] && printf "%s\r\n" "Content-Type: text/html"
 
     [[ -z $CUSTOM_HEADERS ]] && printf "%s\r\n" ""
     printf "%s" "$result"
   else
-    printf "%s\r\n" "HTTP/1.1 $(decode_result $CODE)"
-    printf "%s\r\n" "Server: bash lol"
+    respond $(decode_result $CODE)
     printf "%s\r\n" ""
     printf "%s" "$result"
   fi
