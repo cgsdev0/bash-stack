@@ -9,40 +9,13 @@ Create a new bash stack app:
 curl -SsL create.bashsta.cc | bash
 ```
 
-# What?
-
-- it's sort of like [next.js](https://nextjs.org/), except bash (maybe we should call it prev.sh?)
-
 # How?
 
-well, there are a few dependencies:
-- bash 4.0+
-- [tcpserver](http://cr.yp.to/ucspi-tcp/tcpserver.html) (from ucspi-tcp package)
-- coreutils (tested mostly with gnu so far)
-
-check out the examples folder for.. examples
+check out [the developer docs](https://bashsta.cc) for more information!
 
 # ...Why?
 
 not sure
-
-# Roadmap
-
-- [x] file-based routing
-- [x] SSE with pubsub
-- [x] form data parsing
-- [x] cookie parsing
-- [x] url search param parsing
-- [x] multipart file uploads
-- [x] example apps
-- [x] docs
-- [ ] good docs
-- [ ] database abstraction
-- [x] tailwind
-- [x] live reloading
-- [x] URL variable parsing
-- [x] higher level SSE abstraction
-- [x] bootstrap script
 
 ## Disclaimer
 
