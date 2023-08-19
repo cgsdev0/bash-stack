@@ -1,12 +1,12 @@
 name: Releases
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       tag:
         description: 'Tag'
         required: true
-        default: 'v0.0.0' 
+        default: 'v0.0.0'
         type: string
 
 jobs:
@@ -18,13 +18,23 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the template zip
       run: |
-        mv examples/template/* . || echo ok
-        mv examples/template/.gitignore . || echo ok
         sed '2s/^/VERSION=${{ github.events.input.tag }}\n/' core.sh
-        rm -rf examples README.md bootstrap.sh
-        zip -r template.zip *
+        mkdir -p template
+        mv examples/template/* template/ || echo ok
+        mv examples/template/.gitignore template/ || echo ok
+        cp core.sh template/.
+        cp start.sh template/.
+        zip -r template.zip template/*
+
+        # same thing for tailwind template
+        mkdir -p tailwind
+        mv examples/tailwind/* tailwind/ || echo ok
+        mv examples/tailwind/.gitignore tailwind/ || echo ok
+        cp core.sh tailwind/.
+        cp start.sh tailwind/.
+        zip -r template-tailwind.zip tailwind/*
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "template.zip"
+        artifacts: [ "template.zip", "template-tailwind.zip" ]
         tag: ${{ github.event.inputs.tag }}
         generateReleaseNotes: true
