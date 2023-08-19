@@ -11,13 +11,13 @@ declare -A COOKIES
 
 [[ -f 'config.sh' ]] && source config.sh
 
-if [[ "${DEV:-true}" == true ]]; then
-  USE_HMR="$(which inotifywait)"
-fi
-
 debug() {
     printf "%s\n" "$@" 1>&2
 }
+
+if [[ "${DEV:-true}" == true ]]; then
+  USE_HMR="$(which inotifywait)"
+fi
 
 header() {
     printf "%s: %s\r\n" "$1" "$2"
@@ -355,41 +355,39 @@ writeHttpResponse() {
     return
   fi
   matchRoute "$REQUEST_PATH"
-  if [[ -z "$ROUTE_SCRIPT" ]]; then
-    if [[ ! -z "$USE_HMR" ]] && [[ "$REQUEST_PATH" == "/hmr" ]]; then
-      if [[ "$REQUEST_METHOD" == "POST" ]]; then
-        respond 204 OK
-        header HX-Redirect "${HTTP_HEADERS[HX-Current-Url]}"
-        end_headers
-        return
-      fi
-      respond 200 OK
-      header Content-Type "text/event-stream"
-      end_headers
-      output() {
-        while true; do
-          inotifywait -e MODIFY -r pages &> /dev/null
-          event "reload"
-        done
-      }
-      output &
-      PID=$!
-
-
-      while IFS= read -r line; do
-        :
-      done
-
-      kill -9 $PID &>/dev/null
-      wait $PID 2>/dev/null
-
-      return
-    else
-      debug "404 no match found"
-      respond 404 Not Found
+  if [[ ! -z "$USE_HMR" ]] && [[ "$REQUEST_PATH" == "/hmr" ]]; then
+    if [[ "$REQUEST_METHOD" == "POST" ]]; then
+      respond 204 OK
+      header HX-Redirect "${HTTP_HEADERS[HX-Current-Url]}"
       end_headers
       return
     fi
+    respond 200 OK
+    header Content-Type "text/event-stream"
+    end_headers
+    output() {
+      while true; do
+        inotifywait -e MODIFY -r pages &> /dev/null
+        event "reload"
+      done
+    }
+    output &
+    PID=$!
+
+
+    while IFS= read -r line; do
+      :
+    done
+
+    kill -9 $PID &>/dev/null
+    wait $PID 2>/dev/null
+
+    return
+  elif [[ -z "$ROUTE_SCRIPT" ]]; then
+    debug "404 no match found"
+    respond 404 Not Found
+    end_headers
+    return
   fi
 
   if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
