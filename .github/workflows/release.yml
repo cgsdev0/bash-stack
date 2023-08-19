@@ -20,6 +20,7 @@ jobs:
       run: |
         mv examples/template/* . || echo ok
         mv examples/template/.gitignore . || echo ok
+        sed '2s/^/VERSION=${{ github.events.input.tag }}\n/' core.sh
         rm -rf examples README.md bootstrap.sh
         zip -r template.zip *
     - uses: ncipollo/release-action@v1

@@ -27,7 +27,7 @@ respond() {
     CODE=$1
     shift
     printf "HTTP/1.1 %s %s\r\n" "$CODE" "$*"
-    header Server "bash-stack $VERSION"
+    header Server "bash-stack ${VERSION:-devbuild}"
 }
 
 end_headers() {
