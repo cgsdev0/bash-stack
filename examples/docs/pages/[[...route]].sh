@@ -10,22 +10,18 @@ if [[ ! -f "$MARKDOWN_FILE" ]]; then
   return $(status_code 404)
 fi
 
-TOC=""
-if [[ "$STRIPPED" != "$INDEX" ]]; then
-  TOC="--toc"
-else
   if [[ ! -f cache/global_toc ]] || [[ ! -z "$NO_CACHE" ]]; then
-    GLOBAL_TOC="<ul>"
+    GLOBAL_TOC="<div id='sidebar'><ul>"
     for FILE in data/*.md; do
       FNAME="$(basename $FILE)"
       FNAME="${FNAME%.md}"
       GENERATED="$(pandoc --from markdown --to html --standalone --wrap=preserve --highlight-style=breezeDark $FILE --toc)"
       GLOBAL_TOC+="<li>"
-      GLOBAL_TOC+="<a href='#'>$(echo "$GENERATED" | xmllint --html --xpath '//*[@id="title-block-header"]/h1/text()' - 2> /dev/null)</a>"
+      GLOBAL_TOC+="<a href='/$FNAME'>$(echo "$GENERATED" | xmllint --html --xpath '//*[@id="title-block-header"]/h1/text()' - 2> /dev/null)</a>"
       GLOBAL_TOC+="$(echo "$GENERATED" | xmllint --html --xpath '//*[@id="TOC"]/ul' - 2> /dev/null | sed 's@href="@href="/'$FNAME'@g')"
       GLOBAL_TOC+="</li>"
     done
-    GLOBAL_TOC+="</ul>"
+    GLOBAL_TOC+="</ul></div>"
     GLOBAL_TOC="$(echo "$GLOBAL_TOC" | tr -d '\n')"
 
     # save to cache
@@ -37,8 +33,8 @@ else
     debug "cache hit"
     GLOBAL_TOC="$(cat cache/global_toc)"
   fi
-fi
+
 htmx_page << EOF
-  $(pandoc --from markdown --to html --standalone --wrap=preserve --highlight-style=breezeDark $MARKDOWN_FILE $TOC \
+  $(pandoc --from markdown --to html --standalone --wrap=preserve --highlight-style=breezeDark $MARKDOWN_FILE \
   | sed "s@</header>@</header>$GLOBAL_TOC@")
 EOF

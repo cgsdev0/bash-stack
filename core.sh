@@ -367,7 +367,7 @@ writeHttpResponse() {
     end_headers
     output() {
       while true; do
-        inotifywait -e MODIFY -r pages &> /dev/null
+        inotifywait -e MODIFY -r pages static &> /dev/null
         event "reload"
       done
     }
