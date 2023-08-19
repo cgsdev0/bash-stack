@@ -11,15 +11,27 @@ declare -A COOKIES
 
 [[ -f 'config.sh' ]] && source config.sh
 
+if [[ "${DEV:-true}" == true ]]; then
+  USE_HMR="$(which inotifywait)"
+fi
+
 debug() {
-  printf "%s\n" "$@" 1>&2
+    printf "%s\n" "$@" 1>&2
+}
+
+header() {
+    printf "%s: %s\r\n" "$1" "$2"
 }
 
 respond() {
     CODE=$1
     shift
     printf "HTTP/1.1 %s %s\r\n" "$CODE" "$*"
-    printf "%s\r\n" "Server: bash lol"
+    header Server "bash-stack $VERSION"
+}
+
+end_headers() {
+    printf "\r\n"
 }
 
 trim_quotes() {
@@ -53,7 +65,7 @@ urldecode() {
 }
 
 function _inject_hmr() {
-  if [[ "${DEV:-true}" != "true" ]]; then
+  if [[ -z "$USE_HMR" ]]; then
     return
   fi
   cat << EOF
@@ -182,15 +194,6 @@ function component() {
   fi
 }
 
-export -f status_code
-export -f component
-export -f debug
-export -f subscribe
-export -f unsubscribe
-export -f publish
-export -f event
-export -f htmx_page
-
 readonly URI_REGEX='(/[^?#]*)(\?([^#]*))?'
 
 parseHttpRequest() {
@@ -200,8 +203,9 @@ parseHttpRequest() {
   read -r REQUEST_METHOD REQUEST_PATH_WITH_PARAMS HTTP_VERSION
   HTTP_VERSION="${HTTP_VERSION%%$'\r'}"
   debug "$REQUEST_METHOD $REQUEST_PATH_WITH_PARAMS $HTTP_VERSION"
-  REQUEST_PATH=$([[ "$REQUEST_PATH_WITH_PARAMS" =~ $URI_REGEX ]] && echo "${BASH_REMATCH[1]}")
-  REQUEST_QUERY=$([[ "$REQUEST_PATH_WITH_PARAMS" =~ $URI_REGEX ]] && echo "${BASH_REMATCH[3]}")
+  [[ "$REQUEST_PATH_WITH_PARAMS" =~ $URI_REGEX ]]
+  REQUEST_PATH="${BASH_REMATCH[1]}"
+  REQUEST_QUERY="${BASH_REMATCH[3]}"
 
   # Parse query parameters
   if [[ ! -z "$REQUEST_QUERY" ]]; then
@@ -248,7 +252,7 @@ EOF
       fi
       if [[ "$ALLOW_UPLOADS" != "true" ]]; then
         respond 403 Forbidden
-        printf "%s\r\n" ""
+        end_headers
         return
       fi
       state="start"
@@ -337,31 +341,31 @@ writeHttpResponse() {
 
     if [[ ! -f "$FILE_PATH" ]]; then
       respond 404 Not Found
-      printf "%s\r\n" ""
+      end_headers
       return
     fi
     respond 200 OK
     if [[ "$REQUEST_PATH" == *".css" ]]; then
-      printf "%s\r\n" "Content-Type: text/css"
+      header Content-Type "text/css"
     else
-      printf "%s\r\n" "Content-Type: $(file -b --mime-type $FILE_PATH)"
+      header Content-Type "$(file -b --mime-type $FILE_PATH)"
     fi
-    printf "%s\r\n" ""
+    end_headers
     cat "$FILE_PATH"
     return
   fi
   matchRoute "$REQUEST_PATH"
   if [[ -z "$ROUTE_SCRIPT" ]]; then
-    if [[ "$REQUEST_PATH" == "/hmr" ]] && [[ "${DEV:-true}" == "true" ]]; then
+    if [[ ! -z "$USE_HMR" ]] && [[ "$REQUEST_PATH" == "/hmr" ]]; then
       if [[ "$REQUEST_METHOD" == "POST" ]]; then
         respond 204 OK
-        printf "%s\r\n" "HX-Redirect: ${HTTP_HEADERS[HX-Current-Url]}"
-        printf "%s\r\n" ""
+        header HX-Redirect "${HTTP_HEADERS[HX-Current-Url]}"
+        end_headers
         return
       fi
       respond 200 OK
-      printf "%s\r\n" "Content-Type: text/event-stream"
-      printf "%s\r\n" ""
+      header Content-Type "text/event-stream"
+      end_headers
       output() {
         while true; do
           inotifywait -e MODIFY -r pages &> /dev/null
@@ -383,7 +387,7 @@ writeHttpResponse() {
     else
       debug "404 no match found"
       respond 404 Not Found
-      printf "%s\r\n" ""
+      end_headers
       return
     fi
   fi
@@ -391,8 +395,8 @@ writeHttpResponse() {
   if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
     if [[ "$directive_test" == "# sse" ]]; then
       respond 200 OK
-      printf "%s\r\n" "Content-Type: text/event-stream"
-      printf "%s\r\n" ""
+      header Content-Type "text/event-stream"
+      end_headers
       source "pages/${ROUTE_SCRIPT}"
       TOPIC="$(topic)"
       if [[ -z "$TOPIC" ]]; then
@@ -432,13 +436,11 @@ writeHttpResponse() {
     #   debug "%s=%s" "$i" "${HTTP_HEADERS[$i]}"
     # done
     respond 200 OK
-    [[ -z $CUSTOM_HEADERS ]] && printf "%s\r\n" "Content-Type: text/html"
-
-    [[ -z $CUSTOM_HEADERS ]] && printf "%s\r\n" ""
+    [[ -z $CUSTOM_HEADERS ]] && header Content-Type "text/html" && end_headers
     printf "%s" "$result"
   else
     respond $(decode_result $CODE)
-    printf "%s\r\n" ""
+    end_headers
     printf "%s" "$result"
   fi
 }
@@ -527,6 +529,14 @@ matchRoute() {
   done < <(findCatchAllRoutes)
 }
 
+export -f status_code
+export -f component
+export -f debug
+export -f subscribe
+export -f unsubscribe
+export -f publish
+export -f event
+export -f htmx_page
 export -f findPredefinedRoutes
 export -f findDynamicRoutes
 export -f findCatchAllRoutes
