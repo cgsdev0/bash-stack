@@ -2,7 +2,6 @@
 
 <h2><p align="center"><a href="https://www.twitch.tv/badcop_"><img src="https://user-images.githubusercontent.com/4583705/225815615-c9c6c034-c746-4c0b-bab1-d39d65aa1275.png" /> Built live on Twitch</a></p></h2>
 
-[![Super-important test](https://github.com/cgsdev0/bash-stack/actions/workflows/test.yml/badge.svg)](https://github.com/cgsdev0/bash-stack/actions/workflows/test.yml)
 # Quick Start
 
 Create a new bash stack app:
