@@ -4,7 +4,7 @@ cd "${0%/*}"
 
 [[ -f 'config.sh' ]] && source config.sh
 
-if [[ ! -z "$TAILWIND" ]]; then
+if [[ "${DEV:-true}" == "true" ]] && [[ ! -z "$TAILWIND" ]]; then
    npx tailwindcss -i ./static/style.css -o ./static/tailwind.css --watch=always 2>&1 \
      | sed '/^[[:space:]]*$/d;s/^/[tailwind] /' &
    PID=$!
