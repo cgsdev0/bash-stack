@@ -1,6 +1,7 @@
-<p align="center"><img src="https://user-images.githubusercontent.com/4583705/223574260-c94bafb3-82af-4adf-8d71-d8ef7724d287.png" alt="BASH Stack Logo" /></p>
+<p align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/4583705/261850227-54d5aec5-ffdc-4f09-bf38-1a6b47014bb3.png" alt="BASH Stack Logo" /></p>
 
 <h2><p align="center"><a href="https://www.twitch.tv/badcop_"><img src="https://user-images.githubusercontent.com/4583705/225815615-c9c6c034-c746-4c0b-bab1-d39d65aa1275.png" /> Built live on Twitch</a></p></h2>
+
 
 # Quick Start
 
