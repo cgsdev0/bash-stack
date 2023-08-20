@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ github.events.input.tag }}
+      VERSION: ${{ github.event.inputs.tag }}
     permissions:
       contents: write
     steps:
@@ -29,7 +29,7 @@ jobs:
         cp core.sh template/.
         cp start.sh template/.
         cd template/
-        zip -r ../template.zip *
+        zip -Sr ../template.zip *
 
         cd ..
         rm -rf template/
@@ -42,7 +42,7 @@ jobs:
         cp core.sh template/.
         cp start.sh template/.
         cd template/
-        zip -r ../template-tailwind.zip *
+        zip -Sr ../template-tailwind.zip *
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "template.zip,template-tailwind.zip"
