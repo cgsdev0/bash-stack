@@ -1,0 +1,7 @@
+name: "Super-important test"
+on: push
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: denbeigh2000/mark-build-red@3bd3efcef3757212878ee0b923217d85d34bd7ac
