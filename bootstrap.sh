@@ -43,6 +43,9 @@ setup_project() {
   cp -r "$TMP_DIR" "./$PROJECT_NAME"
   cd "$PROJECT_NAME"
   echo "PROJECT_NAME=${PROJECT_NAME}" > "config.sh"
+  if [[ ! -z "$TAILWIND" ]]; then
+    echo "TAILWIND=on" >> "config.sh"
+  fi
   echo "Project '$PROJECT_NAME' is ready!"
   echo ""
   echo ""
@@ -98,6 +101,7 @@ main() {
 
   if [[ "$TAILWIND_CHOICE" == "y" ]] || [[ "$TAILWIND_CHOICE" == "Y" ]]; then
     ZIP_NAME="template-tailwind.zip"
+    TAILWIND=on
   fi
   # Download and extract the framework
   download_framework
