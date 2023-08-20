@@ -410,7 +410,7 @@ writeHttpResponse() {
       output &
       PID=$!
 
-      on_open 1>&2
+      [[ $(type -t on_open) == function ]] && on_open 1>&2
 
       while IFS= read -r line; do
         :
@@ -420,7 +420,7 @@ writeHttpResponse() {
       wait $PID 2>/dev/null
 
       unsubscribe "$SUB_FD"
-      on_close 1>&2
+      [[ $(type -t on_close) == function ]] && on_close 1>&2
 
       return
     elif [[ "$directive_test" == "# headers" ]]; then
@@ -534,6 +534,8 @@ export -f subscribe
 export -f unsubscribe
 export -f publish
 export -f event
+export -f header
+export -f end_headers
 export -f htmx_page
 export -f findPredefinedRoutes
 export -f findDynamicRoutes
