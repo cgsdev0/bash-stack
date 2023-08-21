@@ -18,7 +18,7 @@ mkdir -p data
 mkdir -p uploads
 
 PORT=${PORT:-3000}
-tcpserver -c 1000 0 $PORT ./core.sh
+tcpserver -R -c 1000 0 $PORT ./core.sh
 
 if [[ ! -z "$PID" ]]; then
   kill "$PID"
