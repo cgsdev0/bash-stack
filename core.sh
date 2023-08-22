@@ -368,8 +368,16 @@ writeHttpResponse() {
     header Content-Type "text/event-stream"
     end_headers
     output() {
+      killthehmr() {
+        kill "$HMR_PID" &> /dev/null
+        wait "$HMR_PID" &> /dev/null
+        exit 0
+      }
+      trap 'killthehmr' TERM
       while true; do
-        inotifywait -e MODIFY -r pages static &> /dev/null
+        inotifywait -e MODIFY -r pages static &> /dev/null &
+        HMR_PID=$!
+        wait "$HMR_PID" &> /dev/null
         event "reload"
       done
     }
@@ -381,8 +389,8 @@ writeHttpResponse() {
       :
     done
 
-    kill -9 $PID &>/dev/null
-    wait $PID 2>/dev/null
+    kill $PID &>/dev/null
+    wait $PID &>/dev/null
 
     return
   elif [[ -z "$ROUTE_SCRIPT" ]]; then
@@ -405,8 +413,16 @@ writeHttpResponse() {
       fi
       SUB_FD=$(subscribe "$TOPIC")
       output() {
+        killthecat() {
+          kill "$CAT_PID" &> /dev/null
+          wait "$CAT_PID" &> /dev/null
+          exit 0
+        }
+        trap 'killthecat' TERM
         while true; do
-          cat "$SUB_FD"
+          cat "$SUB_FD" &
+          CAT_PID=$!
+          wait "$CAT_PID" &> /dev/null
         done
       }
       output &
@@ -418,8 +434,8 @@ writeHttpResponse() {
         :
       done
 
-      kill -9 $PID &>/dev/null
-      wait $PID 2>/dev/null
+      kill "$PID" &>/dev/null
+      wait "$PID" &>/dev/null
 
       unsubscribe "$SUB_FD"
       [[ $(type -t on_close) == function ]] && on_close 1>&2
