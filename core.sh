@@ -413,12 +413,12 @@ writeHttpResponse() {
       fi
       SUB_FD=$(subscribe "$TOPIC")
       output() {
-        killthecat() {
+        curiosity() {
           kill "$CAT_PID" &> /dev/null
           wait "$CAT_PID" &> /dev/null
           exit 0
         }
-        trap 'killthecat' TERM
+        trap 'curiosity' TERM
         while true; do
           cat "$SUB_FD" &
           CAT_PID=$!
