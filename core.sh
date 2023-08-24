@@ -139,17 +139,16 @@ function publish() {
   local line
   TOPIC="$1"
   if [[ -z "$TOPIC" ]]; then
-    debug "ATTEMPTED TO PUBLISH ON EMPTY TOPIC"
     return
   fi
   if [[ ! -d "pubsub/${TOPIC}" ]]; then
-    debug "NO SUBSCRIBERS ON ${TOPIC}"
     return
   fi
-  while IFS= read -r line; do
-    find pubsub/"${TOPIC}" -type p \
-      | xargs -P 4 -I {} bash -c "printf '%s\n' '$line' > {}"
-  done
+  TEE_ARGS=$(find pubsub/"${TOPIC}" -type p)
+  if [[ -z "$TEE_ARGS" ]]; then
+    return
+  fi
+  tee $TEE_ARGS > /dev/null
 }
 
 event() {
