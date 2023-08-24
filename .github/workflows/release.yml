@@ -45,6 +45,6 @@ jobs:
         zip -r ../template-tailwind.zip .
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "template.zip,template-tailwind.zip"
+        artifacts: "template.zip,template-tailwind.zip,core.sh"
         tag: ${{ github.event.inputs.tag }}
         generateReleaseNotes: true
