@@ -350,7 +350,7 @@ writeHttpResponse() {
   if [[ ! -z "$USE_HMR" ]] && [[ "$REQUEST_PATH" == "/hmr" ]]; then
     if [[ "$REQUEST_METHOD" == "POST" ]]; then
       respond 204 OK
-      header HX-Redirect "${HTTP_HEADERS[HX-Current-Url]}"
+      header HX-Redirect "${HTTP_HEADERS[hx-current-url]}"
       end_headers
       return
     fi
