@@ -88,6 +88,7 @@ function htmx_page() {
   <html>
   <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
   ${STYLE_TEXT}
   <script src="https://unpkg.com/htmx.org@1.9.3/dist/htmx.min.js" integrity="sha384-lVb3Rd/Ca0AxaoZg5sACe8FJKF0tnUgR2Kd7ehUOG5GCcROv5uBIZsOqovBAcWua" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.8"></script>
