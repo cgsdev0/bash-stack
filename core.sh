@@ -479,18 +479,9 @@ writeHttpResponse() {
   fi
   result=$(source "pages/${ROUTE_SCRIPT}")
   CODE=$?
-  if [[ "$CODE" -lt 64 ]]; then
-    # for i in "${!HTTP_HEADERS[@]}"; do
-    #   debug "%s=%s" "$i" "${HTTP_HEADERS[$i]}"
-    # done
-    respond 200 OK
-    [[ -z $CUSTOM_HEADERS ]] && header Content-Type "text/html" && end_headers
-    printf "%s" "$result"
-  else
-    respond $(decode_result $CODE)
-    end_headers
-    printf "%s" "$result"
-  fi
+  respond $(decode_result $CODE)
+  [[ -z $CUSTOM_HEADERS ]] && header Content-Type "text/html" && end_headers
+  printf "%s" "$result"
 }
 
 findRoutes() {
