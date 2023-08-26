@@ -8,6 +8,7 @@ declare -A QUERY_PARAMS
 declare -A FORM_DATA
 declare -A PATH_VARS
 declare -A COOKIES
+declare -A SESSION
 
 [[ -f 'config.sh' ]] && source config.sh
 
@@ -28,6 +29,9 @@ respond() {
     shift
     printf "HTTP/1.1 %s %s\r\n" "$CODE" "$*"
     header Server "bash-stack ${VERSION:-devbuild}"
+    [[ ! -z "$SESSION_HEADER_TO_BE_WRITTEN" ]] && \
+      printf "%s" "$SESSION_HEADER_TO_BE_WRITTEN"
+
 }
 
 end_headers() {
@@ -62,6 +66,39 @@ urldecode() {
     # Usage: urldecode "string"
     : "${1//+/ }"
     printf '%b\n' "${_//%/\\x}"
+}
+
+function create_or_resume_session() {
+  local KEY
+  local VAL
+  if [[ -z "${COOKIES[_session]}" ]]; then
+    SESSION_ID="$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32 ; echo '')"
+    SESSION_HEADER_TO_BE_WRITTEN=$(header Set-Cookie "_session=$SESSION_ID; Path=/; Secure; HttpOnly")
+  else
+    SESSION_ID=$(echo "${COOKIES[_session]}" | tr -dc A-Za-z0-9)
+  fi
+  if [[ -f "sessions/$SESSION_ID" ]]; then
+    while IFS= read -r line; do
+      KEY="$(echo "$line" | cut -f1)"
+      VAL="$(echo "$line" | cut -f2-)"
+      SESSION["$KEY"]="$VAL"
+    done < "sessions/$SESSION_ID"
+  fi
+}
+
+function save_session() {
+  if [[ "${ENABLE_SESSIONS:-false}" != true ]]; then
+    debug "Error: You must set ENABLE_SESSIONS=true before calling save_session!"
+    return
+  fi
+  local KEY
+  if [[ -z "$SESSION_ID" ]]; then
+    return
+  fi
+  touch "sessions/$SESSION_ID"
+  for KEY in ${!SESSION[@]}; do
+    printf "%s\t%s\n" "$KEY" "${SESSION[$KEY]}"
+  done > "sessions/$SESSION_ID"
 }
 
 function _inject_hmr() {
@@ -348,6 +385,9 @@ writeHttpResponse() {
     return
   fi
   matchRoute "$REQUEST_PATH"
+
+  [[ "${ENABLE_SESSIONS:-false}" == "true" ]] && create_or_resume_session
+
   if [[ ! -z "$USE_HMR" ]] && [[ "$REQUEST_PATH" == "/hmr" ]]; then
     if [[ "$REQUEST_METHOD" == "POST" ]]; then
       respond 204 OK
@@ -390,6 +430,7 @@ writeHttpResponse() {
     end_headers
     return
   fi
+
 
   if directive_test=$(head -1 "pages/${ROUTE_SCRIPT}"); then
     if [[ "$directive_test" == "# sse" ]]; then
@@ -550,6 +591,7 @@ export -f findPredefinedRoutes
 export -f findDynamicRoutes
 export -f findCatchAllRoutes
 export -f matchRoute
+export -f save_session
 
 parseHttpRequest
 writeHttpResponse

@@ -13,6 +13,7 @@ fi
 # remove any old subscriptions; they are no longer valid
 rm -rf pubsub
 
+mkdir -p sessions
 mkdir -p pubsub
 mkdir -p data
 mkdir -p uploads
