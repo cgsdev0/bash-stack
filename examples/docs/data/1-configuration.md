@@ -10,6 +10,7 @@ will check:
 
 - `HIDE_LOGO` - if this is set, the "powered by bash" logo will be hidden
 - `NO_STYLES` - if this is set, no CSS will be linked in the `<head>`
+- `ENABLE_SESSIONS` - if this is 'true', bash stack will manage sessions (using a `_session` cookie).
 
 ## Tailwind
 

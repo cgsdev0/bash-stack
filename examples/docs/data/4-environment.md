@@ -12,7 +12,7 @@ These are the directives that currently exist:
 
 - `# sse` - this route will be used for [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) [(example)](https://github.com/cgsdev0/bash-stack/blob/main/examples/jeopardy-buzzer/pages/sse/%5Busertype%5D/%5Broom%5D.sh)
 - `# allow-uploads` - this route will allow file uploads via a multipart encoded form. [(example)](https://github.com/cgsdev0/bash-stack/blob/main/examples/file-upload/pages/upload.sh)
-- `# headers` - this route will be responsible for writing its own headers section, in addition to the response body. [(example)](https://github.com/cgsdev0/bash-stack/blob/main/examples/jeopardy-buzzer/pages/login.sh)
+- `# headers` - this route will be responsible for writing its own headers section, in addition to the response body. [(example)](https://github.com/cgsdev0/bash-stack/blob/main/examples/sessions/pages/false.sh#L1-L3)
 
 
 ## Request Variables
@@ -36,3 +36,17 @@ The following are only used if you are writing an upload handler:
 - `FILE_UPLOADS` - A mapping of input names -> tmp files
 - `FILE_UPLOAD_TYPES` - A mapping of input names -> file upload types  (according to the request)
 - `FILE_UPLOAD_NAMES` - A mapping of input names -> original filenames
+
+## Returning HTTP Codes
+
+You can return any of the following HTTP codes from an endpoint:
+
+- 200 - 263
+- 300 - 363
+- 400 - 463
+- 500 - 563
+
+```bash
+# example
+return $(status_code 404)
+```
