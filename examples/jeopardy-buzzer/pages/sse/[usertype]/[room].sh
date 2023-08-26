@@ -1,8 +1,8 @@
 # sse
 
-ROOM_CODE="${REQUEST_PATH##*/}"
-USER_TYPE="${REQUEST_PATH%/*}"
-USER_TYPE="${USER_TYPE##*/}"
+ROOM_CODE="${PATH_VARS[room]}"
+USER_TYPE="${PATH_VARS[usertype]}"
+
 PUBSUB_KEY="room-${ROOM_CODE}"
 
 # required - this is the pubsub topic
