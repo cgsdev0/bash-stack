@@ -485,9 +485,7 @@ writeHttpResponse() {
 }
 
 findRoutes() {
-  local SIZE
-  SIZE=$(stat -c "%s" $ROUTES_CACHE)
-  if [[ $SIZE -eq 0 ]]; then
+  if [[ -z $ROUTES_CACHE ]] || [[ $(stat -c "%s" $ROUTES_CACHE) -eq 0 ]]; then
     cd pages
     find . -type f,l -iname '*.sh' | sed 's@^\./@@' | tee $ROUTES_CACHE
   else
