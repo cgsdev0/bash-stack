@@ -10,6 +10,8 @@ if [[ "${DEV:-true}" == "true" ]] && [[ ! -z "$TAILWIND" ]]; then
    PID=$!
 fi
 
+export ROUTES_CACHE=$(mktemp)
+
 # remove any old subscriptions; they are no longer valid
 rm -rf pubsub
 
