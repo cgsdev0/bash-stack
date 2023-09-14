@@ -485,11 +485,14 @@ writeHttpResponse() {
 }
 
 findRoutes() {
-  cd pages
-  for i in $(find . -type f,l -iname '*.sh' \
-    | sed 's@^\./@@'); do
-    echo $i;
-  done
+  local SIZE
+  SIZE=$(stat -c "%s" $ROUTES_CACHE)
+  if [[ $SIZE -eq 0 ]]; then
+    cd pages
+    find . -type f,l -iname '*.sh' | sed 's@^\./@@' | tee $ROUTES_CACHE
+  else
+    cat $ROUTES_CACHE
+  fi
 }
 
 findPredefinedRoutes() {
