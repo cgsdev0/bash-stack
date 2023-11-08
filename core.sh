@@ -30,7 +30,7 @@ respond() {
     printf "HTTP/1.1 %s %s\r\n" "$CODE" "$*"
     header Server "bash-stack ${VERSION:-devbuild}"
     [[ ! -z "$SESSION_HEADER_TO_BE_WRITTEN" ]] && \
-      printf "%s" "$SESSION_HEADER_TO_BE_WRITTEN"
+      printf "%s\n" "$SESSION_HEADER_TO_BE_WRITTEN"
 
 }
 
