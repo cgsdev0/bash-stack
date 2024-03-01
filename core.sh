@@ -18,6 +18,11 @@ debug() {
 
 if [[ "${DEV:-true}" == true ]]; then
   USE_HMR="$(which inotifywait)"
+
+  # disable HMR when using netcat
+  if [[ "$TCP_PROVIDER" == "nc" ]]; then
+    USE_HMR=""
+  fi
 fi
 
 header() {
