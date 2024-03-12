@@ -1,0 +1,5 @@
+# sse
+
+topic() {
+  echo stuff
+}
