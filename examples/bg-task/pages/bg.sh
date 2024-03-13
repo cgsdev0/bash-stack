@@ -12,12 +12,12 @@ event_stream() {
 # and pipe its output to the SSE topic 'stuff'
 #
 # important things to note:
-# 1. we close stdin at the start with '</dev/null'
+# 1. we close stdin at the start with '0>&-'
 # 2. we close stdout and stderr at the end of the pipe
 
-</dev/null ./task.sh \
+0>&- ./task.sh \
   | event_stream update \
-  | publish stuff &>/dev/null &
+  | publish stuff  1>&- 2>&- &
 
 # this happens immediately; we don't need to wait
 # for the above task to finish to get this response.
