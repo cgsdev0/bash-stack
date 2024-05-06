@@ -252,7 +252,9 @@ parseHttpRequest() {
   # Parse query parameters
   if [[ ! -z "$REQUEST_QUERY" ]]; then
     while read -r -d '&' line; do
-      QUERY_PARAMS["${line%%=*}"]=$(urldecode "${line#*=}")
+      local VARNAME="${line%%=*}"
+      [[ -z "$VARNAME" ]] && continue
+      QUERY_PARAMS["$VARNAME"]=$(urldecode "${line#*=}")
     done <<< "${REQUEST_QUERY}&"
   fi
 
