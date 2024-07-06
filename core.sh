@@ -393,7 +393,7 @@ writeHttpResponse() {
     if [[ "$REQUEST_PATH" == *".css" ]]; then
       header Content-Type "text/css"
     else
-      header Content-Type "$(file -b --mime-type $FILE_PATH)"
+      header Content-Type "$(file -b --mime-type "$FILE_PATH")"
     fi
     end_headers
     cat "$FILE_PATH"
