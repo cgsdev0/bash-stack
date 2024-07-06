@@ -381,6 +381,14 @@ writeHttpResponse() {
       end_headers
       return
     fi
+    REALPATH="$(realpath --relative-to="./static" "$FILE_PATH")"
+    FIRST_THREE="${REALPATH:0:3}"
+    if [[ "$FIRST_THREE" == "../" ]]; then
+      respond 403 FORBIDDEN
+      end_headers
+      return
+    fi
+    debug "$REALPATH"
     respond 200 OK
     if [[ "$REQUEST_PATH" == *".css" ]]; then
       header Content-Type "text/css"
