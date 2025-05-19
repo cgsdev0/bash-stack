@@ -23,3 +23,7 @@ not sure
 This project is intended for educational / entertainment purposes only. In its current implementation, it is riddled with security issues, and it would probably be extremely irresponsible to use this for any sort of production grade web service.
 
 ...having said that, if you happen to use it for anything, I'd love to hear about it!
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cgsdev0/bash-stack&type=Date)](https://www.star-history.com/#cgsdev0/bash-stack&Date)
