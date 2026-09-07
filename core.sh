@@ -10,7 +10,12 @@ declare -A PATH_VARS
 declare -A COOKIES
 declare -A SESSION
 
-[[ -f 'config.sh' ]] && source config.sh
+: "${PROJECT_ROOT?core.sh needs a PROJECT_ROOT}"
+export CORE_SH="${CORE_SH-$SCRIPT_DIR/core.sh}"
+export CONFIG_SH="${CONFIG_SH-$PROJECT_ROOT/config.sh}"
+cd "$PROJECT_ROOT"
+
+[[ -f "$CONFIG_SH" ]] && source "$CONFIG_SH"
 
 debug() {
     printf "%s\n" "$@" 1>&2
