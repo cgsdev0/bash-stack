@@ -18,6 +18,14 @@ check out [the developer docs](https://bashsta.cc) for more information!
 
 not sure
 
+# Nix
+
+If you have nix, you can directly start a bash-stack from any compatible project directory:
+
+```sh
+nix run github:cgsdev0/bash-stack
+```
+
 ## Disclaimer
 
 This project is intended for educational / entertainment purposes only. In its current implementation, it is riddled with security issues, and it would probably be extremely irresponsible to use this for any sort of production grade web service.
